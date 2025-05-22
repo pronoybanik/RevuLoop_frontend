@@ -4,20 +4,20 @@ import Image from "next/image";
 import logo from "../../assets/logo/2-removebg-preview.png";
 import google from "../../assets/logo/google.png";
 import apple from "../../assets/logo/apple.png";
-import { 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
-  Mail, 
-  Phone, 
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Mail,
+  Phone,
   MapPin,
   Download,
   Star,
   TrendingUp,
   Award,
   Users,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import { featuredReview } from "@/services/Review";
 import { CardContent, CardTitle } from "../ui/card";
@@ -44,17 +44,32 @@ const Footer = async () => {
   ];
 
   const socialLinks = [
-    { href: "#", icon: Facebook, label: "Facebook", color: "hover:text-blue-500" },
+    {
+      href: "#",
+      icon: Facebook,
+      label: "Facebook",
+      color: "hover:text-blue-500",
+    },
     { href: "#", icon: Twitter, label: "Twitter", color: "hover:text-sky-400" },
-    { href: "#", icon: Instagram, label: "Instagram", color: "hover:text-pink-500" },
-    { href: "#", icon: Linkedin, label: "LinkedIn", color: "hover:text-blue-600" },
+    {
+      href: "#",
+      icon: Instagram,
+      label: "Instagram",
+      color: "hover:text-pink-500",
+    },
+    {
+      href: "#",
+      icon: Linkedin,
+      label: "LinkedIn",
+      color: "hover:text-blue-600",
+    },
   ];
 
   const stats = [
     { icon: Users, label: "Active Users", value: "50K+" },
     { icon: Star, label: "Reviews", value: "25K+" },
     { icon: Award, label: "Awards", value: "15+" },
-    { icon: TrendingUp, label: "Growth", value: "200%" }
+    { icon: TrendingUp, label: "Growth", value: "200%" },
   ];
 
   return (
@@ -66,45 +81,96 @@ const Footer = async () => {
 
       <div className="relative container mx-auto">
         {/* Stats Section */}
-        <div className="py-12 border-b border-gray-700/50">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto px-6">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="text-center p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 hover:border-blue-500/30 transition-all duration-300 hover:transform hover:scale-105 group"
-              >
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <stat.icon className="w-6 h-6 text-white" />
+        {/* Newsletter Section */}
+        <div className="py-16 border-b border-gray-700/50">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-white mb-4">
+                Stay Updated with Latest Reviews
+              </h2>
+              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                Get the latest product reviews, exclusive deals, and insider
+                tips delivered straight to your inbox. Join over 10,000 smart
+                shoppers who never miss out!
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 max-w-2xl mx-auto">
+              <form className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    className="w-full pl-12 pr-4 py-4 bg-gray-800/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                    required
+                  />
                 </div>
-                <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                <div className="text-sm text-gray-400">{stat.label}</div>
+                <button
+                  type="submit"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  Subscribe Now
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </form>
+
+              <div className="flex items-center justify-center gap-6 mt-6 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span>No spam, ever</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span>Unsubscribe anytime</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                  <span>Weekly updates</span>
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* Social proof */}
+            <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-400">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-blue-400" />
+                <span>10,000+ subscribers</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-yellow-400" />
+                <span>4.9/5 rating</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-green-400" />
+                <span>Growing daily</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Main Footer Content */}
         <div className="py-16">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 max-w-7xl mx-auto px-6">
-            
             {/* Company Info + App Download */}
             <div className="lg:col-span-1 space-y-8">
               {/* Logo and Description */}
               <div>
                 <div className="mb-6">
-                  <Image 
-                    src={logo} 
-                    alt="footer logo" 
-                    height={60} 
-                    width={180} 
+                  <Image
+                    src={logo}
+                    alt="footer logo"
+                    height={60}
+                    width={180}
                     className="hover:opacity-80 transition-opacity duration-300"
                   />
                 </div>
                 <p className="text-gray-400 leading-relaxed mb-6">
-                  Your trusted platform for authentic product reviews and customer feedback. 
-                  Join thousands of users making informed decisions every day.
+                  Your trusted platform for authentic product reviews and
+                  customer feedback. Join thousands of users making informed
+                  decisions every day.
                 </p>
-                
+
                 {/* Contact Info */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3 text-sm">
@@ -131,18 +197,36 @@ const Footer = async () => {
                 <div className="space-y-3">
                   <Link href="#" className="block group">
                     <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700/50 hover:border-blue-500/30 transition-all duration-300 hover:transform hover:scale-105">
-                      <Image src={google} alt="Google Play" width={40} height={40} className="rounded-lg" />
+                      <Image
+                        src={google}
+                        alt="Google Play"
+                        width={40}
+                        height={40}
+                        className="rounded-lg"
+                      />
                       <div>
-                        <p className="text-white font-medium text-sm">Get it on</p>
-                        <p className="text-blue-400 font-semibold">Google Play</p>
+                        <p className="text-white font-medium text-sm">
+                          Get it on
+                        </p>
+                        <p className="text-blue-400 font-semibold">
+                          Google Play
+                        </p>
                       </div>
                     </div>
                   </Link>
                   <Link href="#" className="block group">
                     <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700/50 hover:border-blue-500/30 transition-all duration-300 hover:transform hover:scale-105">
-                      <Image src={apple} alt="App Store" width={40} height={40} className="rounded-lg" />
+                      <Image
+                        src={apple}
+                        alt="App Store"
+                        width={40}
+                        height={40}
+                        className="rounded-lg"
+                      />
                       <div>
-                        <p className="text-white font-medium text-sm">Download on</p>
+                        <p className="text-white font-medium text-sm">
+                          Download on
+                        </p>
                         <p className="text-blue-400 font-semibold">App Store</p>
                       </div>
                     </div>
@@ -294,7 +378,9 @@ const Footer = async () => {
           <div className="flex flex-col lg:flex-row items-center justify-between px-6 space-y-6 lg:space-y-0">
             {/* Social Links */}
             <div className="flex items-center space-x-6">
-              <h4 className="text-sm font-semibold text-gray-400">Follow Us:</h4>
+              <h4 className="text-sm font-semibold text-gray-400">
+                Follow Us:
+              </h4>
               {socialLinks.map((social, index) => (
                 <Link
                   key={index}
@@ -310,13 +396,20 @@ const Footer = async () => {
             {/* Copyright */}
             <div className="text-center lg:text-right">
               <p className="text-sm text-gray-500">
-                Copyright © {new Date().getFullYear()} Team Opinion Oasis. All rights reserved.
+                Copyright © {new Date().getFullYear()} Team Opinion Oasis. All
+                rights reserved.
               </p>
               <div className="flex items-center justify-center lg:justify-end space-x-6 mt-2">
-                <Link href="/terms" className="text-sm text-gray-400 hover:text-blue-400 transition-colors duration-300">
+                <Link
+                  href="/terms"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors duration-300"
+                >
                   Terms & Conditions
                 </Link>
-                <Link href="/privacy" className="text-sm text-gray-400 hover:text-blue-400 transition-colors duration-300">
+                <Link
+                  href="/privacy"
+                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors duration-300"
+                >
                   Privacy Policy
                 </Link>
               </div>

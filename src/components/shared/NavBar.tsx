@@ -120,7 +120,7 @@ export default function Navbar() {
     <section
       className={`w-full sticky top-0 z-50 transition-all duration-500 backdrop-blur-md ${
         isScrolled
-          ? "bg-white/90 shadow-lg border-b border-gray-100 py-2"
+          ? "bg-white/90 border-gray-100 py-2"
           : "bg-gradient-to-r from-blue-50/80 via-white/80 to-purple-50/80 py-4"
       }`}
     >
