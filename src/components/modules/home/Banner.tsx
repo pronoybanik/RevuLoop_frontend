@@ -5,6 +5,7 @@ import SecondaryButton from "@/components/shared/SecondaryButton";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { TReview } from "@/types/review";
+import { ArrowUp } from "lucide-react";
 
 const CapterraSearch = () => {
   const [reviews, setReviews] = useState<TReview[]>([]);
@@ -57,7 +58,8 @@ const CapterraSearch = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  const publishedReviews = reviews.filter((item: TReview) => item.status === "PUBLISHED")
+  const publishedReviews = reviews
+    .filter((item: TReview) => item.status === "PUBLISHED")
     .sort((a: TReview, b: TReview) => {
       const dateA = new Date(a.createdAt).getTime() || 0;
       const dateB = new Date(b.createdAt).getTime() || 0;
@@ -72,7 +74,7 @@ const CapterraSearch = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
         <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-transparent rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-purple-400/20 to-transparent rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left Content */}
@@ -82,7 +84,7 @@ const CapterraSearch = () => {
                   <span className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mr-2 animate-pulse"></span>
                   Trusted by thousands of businesses
                 </div>
-                
+
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                   Find the{" "}
                   <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -91,11 +93,12 @@ const CapterraSearch = () => {
                   <br />
                   Reviews & Services
                 </h1>
-                
+
                 <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-2xl">
-                  Critiqo helps you discover the best solutions for your business. 
-                  Make informed decisions based on real user feedback, detailed comparisons, 
-                  and comprehensive ratings from verified customers.
+                  Critiqo helps you discover the best solutions for your
+                  business. Make informed decisions based on real user feedback,
+                  detailed comparisons, and comprehensive ratings from verified
+                  customers.
                 </p>
               </div>
 
@@ -142,7 +145,7 @@ const CapterraSearch = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Search stats */}
                 <div className="flex flex-wrap gap-6 text-sm text-gray-500">
                   <div className="flex items-center space-x-2">
@@ -166,27 +169,32 @@ const CapterraSearch = () => {
               <div className="relative rounded-3xl overflow-hidden shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-500">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 z-10"></div>
                 <Image
-                  src="https://www.capterra.com/assets-capterra-bx-landing-pages/_next/image/?url=%2Fcapterra%2Fassets%2Fhero-home.png&w=640&q=75"
-                  alt="Person using smartphone for product reviews"
+                  src="/hero-home.webp" // Add leading slash here
+                  alt="Person using smartphone"
                   width={600}
-                  height={700}
-                  className="w-full h-auto object-cover"
-                  priority
+                  height={600}
+                  layout="responsive"
+                  className="rounded-lg object-cover h-full"
                 />
               </div>
-              
+
               {/* Floating cards */}
               <div className="absolute -top-4 -left-4 bg-white rounded-2xl shadow-lg p-4 transform -rotate-6 hover:rotate-0 transition-transform duration-300">
                 <div className="flex items-center space-x-2">
                   <div className="flex space-x-1">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                      <div
+                        key={i}
+                        className="w-3 h-3 bg-yellow-400 rounded-full"
+                      ></div>
                     ))}
                   </div>
-                  <span className="text-sm font-semibold text-gray-700">4.9/5</span>
+                  <span className="text-sm font-semibold text-gray-700">
+                    4.9/5
+                  </span>
                 </div>
               </div>
-              
+
               <div className="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow-lg p-4 transform rotate-6 hover:rotate-0 transition-transform duration-300">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">98%</div>
@@ -214,15 +222,18 @@ const CapterraSearch = () => {
                 </h2>
                 {!isLoading && publishedReviews.length > 0 && (
                   <p className="text-gray-600 mt-2">
-                    Found {publishedReviews.length} review{publishedReviews.length !== 1 ? 's' : ''}
+                    Found {publishedReviews.length} review
+                    {publishedReviews.length !== 1 ? "s" : ""}
                   </p>
                 )}
               </div>
-              
+
               {isLoading && (
                 <div className="flex items-center space-x-3 bg-blue-50 px-4 py-2 rounded-full">
                   <div className="w-5 h-5 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                  <span className="text-blue-700 font-medium">Searching...</span>
+                  <span className="text-blue-700 font-medium">
+                    Searching...
+                  </span>
                 </div>
               )}
             </div>
@@ -232,13 +243,19 @@ const CapterraSearch = () => {
           {isLoading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, index) => (
-                <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-pulse">
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-pulse"
+                >
                   <div className="h-4 bg-gray-200 rounded mb-4"></div>
                   <div className="h-3 bg-gray-200 rounded mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-2/3 mb-4"></div>
                   <div className="flex space-x-1 mb-3">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="w-4 h-4 bg-gray-200 rounded-full"></div>
+                      <div
+                        key={i}
+                        className="w-4 h-4 bg-gray-200 rounded-full"
+                      ></div>
                     ))}
                   </div>
                   <div className="h-20 bg-gray-200 rounded"></div>
@@ -283,8 +300,8 @@ const CapterraSearch = () => {
                       No reviews found
                     </h3>
                     <p className="text-gray-600 mb-6">
-                      We couldn't find any reviews matching "{searchQuery}". 
-                      Try searching with different keywords or check your spelling.
+                      We couldn't find any reviews matching "{searchQuery}". Try
+                      searching with different keywords or check your spelling.
                     </p>
                     <button
                       onClick={() => setSearchQuery("")}
@@ -302,33 +319,43 @@ const CapterraSearch = () => {
 
       {/* Features Section - shown when no search is active */}
       {!hasSearched && !isLoading && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16
+        ">
           <div className="text-center mb-12">
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full text-sm font-medium text-gray-700 shadow-sm mb-4">
+            <ArrowUp className="w-4 h-4 mr-2 text-blue-600" />
+            Most Popular Categories
+              </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              
               Why Choose Critiqo?
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Make confident business decisions with our comprehensive review platform
+              Make confident business decisions with our comprehensive review
+              platform
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
                 icon: "🔍",
                 title: "Smart Search",
-                description: "Find exactly what you're looking for with our intelligent search algorithm"
+                description:
+                  "Find exactly what you're looking for with our intelligent search algorithm",
               },
               {
                 icon: "⭐",
                 title: "Verified Reviews",
-                description: "All reviews are from verified users to ensure authenticity and reliability"
+                description:
+                  "All reviews are from verified users to ensure authenticity and reliability",
               },
               {
                 icon: "📊",
                 title: "Detailed Analytics",
-                description: "Get comprehensive insights with detailed ratings and comparison tools"
-              }
+                description:
+                  "Get comprehensive insights with detailed ratings and comparison tools",
+              },
             ].map((feature, index) => (
               <div
                 key={index}
@@ -338,9 +365,7 @@ const CapterraSearch = () => {
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">
-                  {feature.description}
-                </p>
+                <p className="text-gray-600">{feature.description}</p>
               </div>
             ))}
           </div>
