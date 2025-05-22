@@ -70,7 +70,11 @@ const LatestReview = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-pulse">
+              <div
+                key={index}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-pulse"
+                style={{ height: "auto" }} // Removed fixed height for flexibility
+              >
                 <div className="h-4 bg-gray-200 rounded mb-4"></div>
                 <div className="h-3 bg-gray-200 rounded mb-2"></div>
                 <div className="h-3 bg-gray-200 rounded w-2/3 mb-4"></div>
@@ -92,6 +96,7 @@ const LatestReview = () => {
                   <div
                     key={review.id}
                     className="transform hover:scale-105 transition-all duration-300 hover:shadow-xl"
+                    style={{ height: "auto" }} // Removed fixed height for flexibility
                   >
                     <LatestReviewCard review={review} />
                   </div>
@@ -153,11 +158,18 @@ const LatestReview = () => {
 
         {/* Stats Section */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { label: "Verified Reviews", value: "50K+", color: "from-blue-400 to-blue-600" },
-            { label: "Satisfied Customers", value: "98%", color: "from-green-400 to-green-600" },
-            { label: "Product Categories", value: "200+", color: "from-purple-400 to-purple-600" },
-            { label: "New Reviews Daily", value: "100+", color: "from-yellow-400 to-orange-500" }
+          {[{
+            label: "Verified Reviews", value: "50K+", color: "from-blue-400 to-blue-600"
+          },
+          {
+            label: "Satisfied Customers", value: "98%", color: "from-green-400 to-green-600"
+          },
+          {
+            label: "Product Categories", value: "200+", color: "from-purple-400 to-purple-600"
+          },
+          {
+            label: "New Reviews Daily", value: "100+", color: "from-yellow-400 to-orange-500"
+          }
           ].map((stat, index) => (
             <div key={index} className="bg-white rounded-2xl shadow-md p-6 text-center">
               <div className={`text-3xl sm:text-4xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-2`}>
