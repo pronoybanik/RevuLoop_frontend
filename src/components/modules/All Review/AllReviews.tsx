@@ -35,9 +35,10 @@ const AllReviews = () => {
   const [sortOrder, setSortOrder] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Default to closed on mobile
-  const [viewMode, setViewMode] = useState("grid"); // grid or list
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [viewMode, setViewMode] = useState("grid");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -50,23 +51,28 @@ const AllReviews = () => {
 
   useEffect(() => {
     const fetchCategory = async () => {
-      const { data: category } = await getAllCategories();
-      setCatData(category);
+      try {
+        const { data: category } = await getAllCategories();
+        setCatData(category || []);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCatData([]);
+      }
     };
     fetchCategory();
-  }, [categoryFilter]);
+  }, []);
 
-  // Set sidebar open by default on desktop
+  // Handle sidebar state based on screen size
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) { // lg breakpoint
+      if (window.innerWidth >= 1024) {
         setSidebarOpen(true);
       } else {
         setSidebarOpen(false);
       }
     };
 
-    handleResize(); // Initial check
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -88,12 +94,19 @@ const AllReviews = () => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_API}/reviews?${params}`
       );
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
       setReviews(data?.data || []);
       const rPage = data?.meta?.total / data?.meta?.limit;
-      setTotalPages(Math.ceil(rPage));
+      setTotalPages(Math.ceil(rPage) || 1);
     } catch (err) {
       console.error("Error fetching reviews:", err);
+      setReviews([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -125,7 +138,9 @@ const AllReviews = () => {
     setSortOrder("");
     setCurrentPage(1);
     setMobileFiltersOpen(false);
-    fetchReviews();
+    
+    // Clear URL params as well
+    router.push(pathname, { scroll: false });
   };
 
   const publishedReviews = reviews
@@ -135,9 +150,9 @@ const AllReviews = () => {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-  // Filter component for reuse in both desktop sidebar and mobile modal
+  // Enhanced Filter Component with better mobile handling
   const FilterComponent = ({ isMobile = false }) => (
-    <div className={`space-y-4 ${isMobile ? 'space-y-6' : ''}`}>
+    <div className={`space-y-4 ${isMobile ? 'space-y-5' : 'space-y-4'}`}>
       {/* Category Filter */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -147,7 +162,7 @@ const AllReviews = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none bg-white text-sm sm:text-base"
+            className="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none bg-white"
           >
             <option value="">All Categories</option>
             {catData?.map((cat: any) => (
@@ -156,7 +171,7 @@ const AllReviews = () => {
               </option>
             ))}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
       </div>
 
@@ -167,21 +182,21 @@ const AllReviews = () => {
         </label>
         <div className="space-y-2">
           {["", "5", "4", "3", "2"].map((rating) => (
-            <label key={rating} className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group">
+            <label key={rating} className="flex items-center space-x-3 cursor-pointer group min-h-[44px] py-1">
               <input
                 type="radio"
                 name="rating"
                 value={rating}
                 checked={status === rating}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-4 h-4 text-blue-600 border-2 border-gray-300 focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-2 border-gray-300 focus:ring-blue-500 focus:ring-2"
               />
-              <span className="text-sm sm:text-base text-gray-700 group-hover:text-blue-600 transition-colors duration-200 flex items-center">
+              <span className="text-sm text-gray-700 group-hover:text-blue-600 transition-colors duration-200 flex items-center">
                 {rating === "" ? (
                   "Any Rating"
                 ) : (
                   <>
-                    {rating} <Star className="w-3 h-3 sm:w-4 sm:h-4 ml-1 fill-current text-yellow-400" />
+                    {rating} <Star className="w-4 h-4 ml-1 fill-current text-yellow-400" />
                   </>
                 )}
               </span>
@@ -201,16 +216,16 @@ const AllReviews = () => {
             { value: "true", label: "Premium Reviews" },
             { value: "false", label: "Free Reviews" }
           ].map((option) => (
-            <label key={option.value} className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group">
+            <label key={option.value} className="flex items-center space-x-3 cursor-pointer group min-h-[44px] py-1">
               <input
                 type="radio"
                 name="premium"
                 value={option.value}
                 checked={availabilityFilter === option.value}
                 onChange={(e) => setAvailabilityFilter(e.target.value)}
-                className="w-4 h-4 text-blue-600 border-2 border-gray-300 focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-2 border-gray-300 focus:ring-blue-500 focus:ring-2"
               />
-              <span className="text-sm sm:text-base text-gray-700 group-hover:text-blue-600 transition-colors duration-200">
+              <span className="text-sm text-gray-700 group-hover:text-blue-600 transition-colors duration-200">
                 {option.label}
               </span>
             </label>
@@ -227,13 +242,13 @@ const AllReviews = () => {
           <select
             onChange={(e) => setSortOrder(e.target.value)}
             value={sortOrder}
-            className="w-full border-2 border-gray-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none bg-white text-sm sm:text-base"
+            className="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 appearance-none bg-white"
           >
             <option value="">Default Sort</option>
             <option value="desc">Newest First</option>
             <option value="asc">Oldest First</option>
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
       </div>
 
@@ -251,7 +266,7 @@ const AllReviews = () => {
                 setCurrentPage(1);
                 if (isMobile) setMobileFiltersOpen(false);
               }}
-              className={`py-2 px-3 sm:px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
                 itemsPerPage === size
                   ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                   : "bg-gray-100 hover:bg-gray-200 text-gray-700"
@@ -269,35 +284,35 @@ const AllReviews = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header Section */}
       <div className="bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-          <div className="text-center mb-4 sm:mb-6">
-            <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full text-xs sm:text-sm font-medium text-gray-700 shadow-sm mb-3 sm:mb-4">
-              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-600" />
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full text-xs font-medium text-gray-700 shadow-sm mb-4">
+              <TrendingUp className="w-3 h-3 mr-2 text-blue-600" />
               Explore Customer Reviews
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-4 px-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
               Discover Amazing{" "}
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Product Reviews
               </span>
             </h1>
-            <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto px-4">
+            <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-2">
               Find your perfect products with authentic customer reviews and detailed ratings
             </p>
           </div>
 
-          {/* Search Bar */}
+          {/* Enhanced Search Bar */}
           <div className="max-w-2xl mx-auto">
             <form onSubmit={handleSearchSubmit} className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl blur opacity-20"></div>
-              <div className="relative bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl blur opacity-20"></div>
+              <div className="relative bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
                 <div className="flex items-center">
-                  <div className="flex items-center pl-3 sm:pl-6 pr-2 sm:pr-4">
-                    <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                  <div className="flex items-center pl-4 pr-3">
+                    <Search className="w-4 h-4 text-gray-400" />
                   </div>
                   <input
                     type="text"
-                    className="flex-1 px-2 py-3 sm:py-4 text-sm sm:text-lg text-gray-900 placeholder-gray-500 bg-transparent border-none outline-none"
+                    className="flex-1 px-2 py-4 text-sm sm:text-base text-gray-900 placeholder-gray-500 bg-transparent border-none outline-none min-w-0"
                     placeholder="Search products, brands..."
                     value={searchText}
                     onChange={(e) => {
@@ -305,10 +320,10 @@ const AllReviews = () => {
                       handleSearchQuery("title", e.target.value);
                     }}
                   />
-                  <div className="p-1 sm:p-2">
+                  <div className="p-2">
                     <PrimaryButton 
                       type="submit"
-                      className="px-4 py-2 sm:px-8 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-sm sm:text-base"
+                      className="px-4 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-xs sm:text-sm whitespace-nowrap"
                       disabled={loading}
                     >
                       {loading ? "Searching..." : "Search"}
@@ -322,41 +337,48 @@ const AllReviews = () => {
       </div>
 
       {/* Mobile Filter Button */}
-      <div className="lg:hidden bg-white border-b border-gray-100 px-3 sm:px-4 py-3">
+      <div className="lg:hidden bg-white border-b border-gray-100 px-4 py-3">
         <button
           onClick={() => setMobileFiltersOpen(true)}
-          className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-medium shadow-lg"
+          className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-medium shadow-lg min-h-[48px]"
         >
           <Filter className="w-4 h-4" />
           <span>Filters & Sort</span>
         </button>
       </div>
 
-      {/* Mobile Filter Modal */}
+      {/* Enhanced Mobile Filter Modal */}
       {mobileFiltersOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
-          <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl max-h-[80vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+       <div className="lg:hidden fixed inset-0 z-50  bg-opacity-50 backdrop-blur-sm flex items-end">
+          <div className="w-full bg-white rounded-t-2xl max-h-[85vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex-shrink-0 sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between rounded-t-2xl">
               <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
               <button
                 onClick={() => setMobileFiltersOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-4 pb-8">
+            
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-4 pb-safe">
               <FilterComponent isMobile={true} />
-              <div className="mt-6 flex space-x-3">
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
+              <div className="flex space-x-3">
                 <button
                   onClick={handleReset}
-                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium"
+                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium min-h-[48px]"
                 >
                   Reset
                 </button>
                 <button
                   onClick={() => setMobileFiltersOpen(false)}
-                  className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium"
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium min-h-[48px]"
                 >
                   Apply
                 </button>
@@ -367,24 +389,22 @@ const AllReviews = () => {
       )}
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-        <div className="flex gap-4 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex gap-6">
           
           {/* Desktop Sidebar - Filters */}
           <div className={`hidden lg:block transition-all duration-300 ${sidebarOpen ? 'w-80' : 'w-12'}`}>
-            <div className="sticky top-4">
+            <div className="sticky top-6">
               {/* Sidebar Toggle */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="w-full mb-4 bg-white rounded-xl shadow-md border border-gray-100 p-3 hover:shadow-lg transition-all duration-300"
+                className="w-full mb-4 bg-white rounded-xl shadow-md border border-gray-100 p-3 hover:shadow-lg transition-all duration-300 min-h-[48px] flex items-center justify-center"
               >
-                <div className="flex items-center justify-center">
-                  {sidebarOpen ? (
-                    <ChevronLeft className="w-5 h-5 text-gray-600" />
-                  ) : (
-                    <SlidersHorizontal className="w-5 h-5 text-gray-600" />
-                  )}
-                </div>
+                {sidebarOpen ? (
+                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+                ) : (
+                  <SlidersHorizontal className="w-5 h-5 text-gray-600" />
+                )}
               </button>
 
               {sidebarOpen && (
@@ -399,7 +419,7 @@ const AllReviews = () => {
                       <button
                         onClick={handleReset}
                         disabled={loading}
-                        className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1"
+                        className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1 min-h-[36px]"
                       >
                         <RefreshCw className="w-4 h-4" />
                         <span>Reset</span>
@@ -420,38 +440,38 @@ const AllReviews = () => {
           <div className="flex-1 min-w-0">
             
             {/* Results Header */}
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6 lg:mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="min-w-0">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
                     {loading ? "Loading..." : `${publishedReviews.length} Reviews Found`}
                   </h3>
-                  <p className="text-gray-600 text-xs sm:text-sm mt-1">
-                    Showing page {currentPage} of {totalPages || 1}
+                  <p className="text-gray-600 text-sm mt-1">
+                    Showing page {currentPage} of {totalPages}
                   </p>
                 </div>
                 
                 {/* View Mode Toggle */}
-                <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+                <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1 self-start sm:self-auto">
                   <button
                     onClick={() => setViewMode("grid")}
-                    className={`p-2 rounded-md transition-all duration-200 ${
+                    className={`p-2.5 rounded-md transition-all duration-200 min-h-[40px] min-w-[40px] flex items-center justify-center ${
                       viewMode === "grid"
                         ? "bg-white shadow-sm text-blue-600"
                         : "text-gray-500 hover:text-gray-700"
                     }`}
                   >
-                    <Grid3X3 className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Grid3X3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`p-2 rounded-md transition-all duration-200 ${
+                    className={`p-2.5 rounded-md transition-all duration-200 min-h-[40px] min-w-[40px] flex items-center justify-center ${
                       viewMode === "list"
                         ? "bg-white shadow-sm text-blue-600"
                         : "text-gray-500 hover:text-gray-700"
                     }`}
                   >
-                    <List className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <List className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -459,42 +479,42 @@ const AllReviews = () => {
 
             {/* Reviews Grid/List */}
             {loading ? (
-              <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-8 sm:p-12 text-center">
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 text-center">
                 <div className="inline-flex items-center space-x-3">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                  <span className="text-gray-600 font-medium text-sm sm:text-base">Loading amazing reviews...</span>
+                  <div className="w-6 h-6 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                  <span className="text-gray-600 font-medium">Loading amazing reviews...</span>
                 </div>
               </div>
             ) : (
-              <div className={`grid gap-3 sm:gap-4 lg:gap-6 ${
+              <div className={`grid gap-4 ${
                 viewMode === "grid" 
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3" 
+                  ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" 
                   : "grid-cols-1"
               }`}>
                 {publishedReviews.length > 0 ? (
                   publishedReviews.map((review, index) => (
                     <div
-                      key={index}
+                      key={`review-${review.id || index}`}
                       className="transform hover:scale-105 transition-all duration-300 hover:shadow-xl"
                     >
                       <LatestReviewCard review={review} />
                     </div>
                   ))
                 ) : (
-                  <div className="col-span-full bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-8 sm:p-12 text-center">
+                  <div className="col-span-full bg-white rounded-xl shadow-lg border border-gray-100 p-8 text-center">
                     <div className="max-w-md mx-auto">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                        <Search className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+                      <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Search className="w-8 h-8 text-gray-400" />
                       </div>
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
                         No reviews found
                       </h3>
-                      <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
+                      <p className="text-gray-600 mb-6">
                         Try adjusting your filters or search terms to find more reviews.
                       </p>
                       <button
                         onClick={handleReset}
-                        className="inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-sm sm:text-base"
+                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 min-h-[48px]"
                       >
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Reset Filters
@@ -506,57 +526,71 @@ const AllReviews = () => {
             )}
 
             {/* Enhanced Pagination */}
-            {publishedReviews.length > 0 && (
-              <div className="mt-8 sm:mt-12 bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            {publishedReviews.length > 0 && totalPages > 1 && (
+              <div className="mt-8 bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row justify-between items-center">
-                  <div className="flex items-center justify-center sm:justify-start space-x-2 sm:space-x-3 w-full sm:w-auto overflow-x-auto">
+                  {/* Pagination Controls */}
+                  <div className="flex items-center justify-center space-x-2 w-full sm:w-auto">
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                       disabled={currentPage === 1 || loading}
-                      className={`flex items-center space-x-1 sm:space-x-2 px-3 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all duration-200 text-sm sm:text-base whitespace-nowrap ${
+                      className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 text-sm min-h-[44px] ${
                         currentPage === 1
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg transform hover:scale-105"
                       }`}
                     >
-                      <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="hidden sm:inline">Previous</span>
+                      <ChevronLeft className="w-4 h-4" />
+                      <span className="hidden xs:inline">Previous</span>
                     </button>
 
-                    <div className="flex items-center space-x-1 sm:space-x-2">
-                      {[...Array(Math.min(3, totalPages))].map((_, i) => {
-                        const pageNum = i + 1;
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => setCurrentPage(pageNum)}
-                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
-                              currentPage === pageNum
-                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
-                                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1">
+                      {(() => {
+                        const pageNumbers = [];
+                        const maxVisiblePages = 3;
+                        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                        
+                        if (endPage - startPage + 1 < maxVisiblePages) {
+                          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                        }
+
+                        for (let i = startPage; i <= endPage; i++) {
+                          pageNumbers.push(
+                            <button
+                              key={i}
+                              onClick={() => setCurrentPage(i)}
+                              className={`w-10 h-10 rounded-lg font-medium transition-all duration-200 text-sm ${
+                                currentPage === i
+                                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
+                                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                              }`}
+                            >
+                              {i}
+                            </button>
+                          );
+                        }
+                        return pageNumbers;
+                      })()}
                     </div>
 
                     <button
                       onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                      disabled={currentPage === totalPages || totalPages === 0 || loading}
-                      className={`flex items-center space-x-1 sm:space-x-2 px-3 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all duration-200 text-sm sm:text-base whitespace-nowrap ${
-                        currentPage === totalPages || totalPages === 0
+                      disabled={currentPage === totalPages || loading}
+                      className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 text-sm min-h-[44px] ${
+                        currentPage === totalPages
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg transform hover:scale-105"
                       }`}
                     >
-                      <span className="hidden sm:inline">Next</span>
-                      <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden xs:inline">Next</span>
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-right">
+                  {/* Page Info */}
+                  <div className="text-sm text-gray-600 text-center sm:text-right">
                     Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, publishedReviews.length)} of {publishedReviews.length} results
                   </div>
                 </div>
